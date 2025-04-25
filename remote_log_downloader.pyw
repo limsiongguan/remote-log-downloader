@@ -2,6 +2,7 @@
 Remote Log Downloader
 Version: 1.0
 Author: Lim Siong Guan
+Date: 2025-04-25
 Description: Unified script for downloading logs and CDRs from both AS and BMS servers
 """
 
