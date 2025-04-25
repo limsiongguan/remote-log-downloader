@@ -66,32 +66,98 @@ class RemoteLogDownloader:
 
     def create_default_config(self):
         """Create default configuration file"""
-        self.config['AS'] = {
-            'host': 'as_server_host',
-            'port': '22',
-            'username': 'username',
-            'password': 'password',
-            'log_path': '/path/to/as/logs',
-            'cdr_path': '/path/to/as/cdrs',
-            'local_log_dir': 'as_logs',
-            'local_cdr_dir': 'as_cdrs'
+        self.config['AS_Servers'] = {
+            'server_list': 'AS1,AS2,AS3'
         }
         
-        self.config['BMS'] = {
-            'host': 'bms_server_host',
+        self.config['AS1'] = {
+            'name': 'AS Server 1 - Primary',
+            'host': 'as1.example.com',
+            'ip_address': '192.168.1.101',
             'port': '22',
             'username': 'username',
             'password': 'password',
-            'log_path': '/path/to/bms/logs',
-            'cdr_path': '/path/to/bms/cdrs',
-            'local_log_dir': 'bms_logs',
-            'local_cdr_dir': 'bms_cdrs'
+            'log_path': '/path/to/as1/logs',
+            'cdr_path': '/path/to/as1/cdrs',
+            'local_log_dir': 'as1_logs',
+            'local_cdr_dir': 'as1_cdrs'
+        }
+        
+        self.config['AS2'] = {
+            'name': 'AS Server 2 - Backup',
+            'host': 'as2.example.com',
+            'ip_address': '192.168.1.102',
+            'port': '22',
+            'username': 'username',
+            'password': 'password',
+            'log_path': '/path/to/as2/logs',
+            'cdr_path': '/path/to/as2/cdrs',
+            'local_log_dir': 'as2_logs',
+            'local_cdr_dir': 'as2_cdrs'
+        }
+        
+        self.config['AS3'] = {
+            'name': 'AS Server 3 - DR',
+            'host': 'as3.example.com',
+            'ip_address': '192.168.1.103',
+            'port': '22',
+            'username': 'username',
+            'password': 'password',
+            'log_path': '/path/to/as3/logs',
+            'cdr_path': '/path/to/as3/cdrs',
+            'local_log_dir': 'as3_logs',
+            'local_cdr_dir': 'as3_cdrs'
+        }
+        
+        self.config['BMS_Servers'] = {
+            'server_list': 'BMS1,BMS2,BMS3'
+        }
+        
+        self.config['BMS1'] = {
+            'name': 'BMS Server 1 - Primary',
+            'host': 'bms1.example.com',
+            'ip_address': '192.168.2.101',
+            'port': '22',
+            'username': 'username',
+            'password': 'password',
+            'log_path': '/path/to/bms1/logs',
+            'cdr_path': '/path/to/bms1/cdrs',
+            'local_log_dir': 'bms1_logs',
+            'local_cdr_dir': 'bms1_cdrs'
+        }
+        
+        self.config['BMS2'] = {
+            'name': 'BMS Server 2 - Backup',
+            'host': 'bms2.example.com',
+            'ip_address': '192.168.2.102',
+            'port': '22',
+            'username': 'username',
+            'password': 'password',
+            'log_path': '/path/to/bms2/logs',
+            'cdr_path': '/path/to/bms2/cdrs',
+            'local_log_dir': 'bms2_logs',
+            'local_cdr_dir': 'bms2_cdrs'
+        }
+        
+        self.config['BMS3'] = {
+            'name': 'BMS Server 3 - DR',
+            'host': 'bms3.example.com',
+            'ip_address': '192.168.2.103',
+            'port': '22',
+            'username': 'username',
+            'password': 'password',
+            'log_path': '/path/to/bms3/logs',
+            'cdr_path': '/path/to/bms3/cdrs',
+            'local_log_dir': 'bms3_logs',
+            'local_cdr_dir': 'bms3_cdrs'
         }
         
         self.config['General'] = {
             'download_interval': '3600',  # 1 hour
             'retry_interval': '300',      # 5 minutes
-            'max_retries': '3'
+            'max_retries': '3',
+            'enabled_servers': 'AS1,AS2,AS3,BMS1,BMS2,BMS3',
+            'connection_preference': 'hostname'
         }
         
         with open(CONFIG_FILE, 'w') as f:
@@ -133,9 +199,13 @@ class RemoteLogDownloader:
         server_frame = ttk.LabelFrame(main_frame, text="Server Selection", padding="5")
         server_frame.pack(fill=tk.X, pady=(0, 10))
         
-        self.server_var = tk.StringVar(value="AS")
-        ttk.Radiobutton(server_frame, text="AS Server", variable=self.server_var, value="AS").pack(side=tk.LEFT, padx=5)
-        ttk.Radiobutton(server_frame, text="BMS Server", variable=self.server_var, value="BMS").pack(side=tk.LEFT, padx=5)
+        # Create server selection combobox
+        self.server_var = tk.StringVar()
+        self.server_combo = ttk.Combobox(server_frame, textvariable=self.server_var, state="readonly")
+        self.server_combo.pack(side=tk.LEFT, padx=5)
+        
+        # Populate server list
+        self.update_server_list()
         
         # Action buttons frame
         button_frame = ttk.Frame(main_frame)
@@ -153,14 +223,36 @@ class RemoteLogDownloader:
         self.status_text.pack(fill=tk.BOTH, expand=True)
         self.status_text.configure(state=tk.DISABLED)
 
+    def update_server_list(self):
+        """Update the server selection combobox with enabled servers"""
+        enabled_servers = self.config['General']['enabled_servers'].split(',')
+        # Create a list of tuples (server_id, display_name)
+        server_list = [(server_id, self.config[server_id]['name']) for server_id in enabled_servers]
+        # Update combobox values with display names
+        self.server_combo['values'] = [name for _, name in server_list]
+        # Store the mapping of display names to server IDs
+        self.server_name_to_id = {name: server_id for server_id, name in server_list}
+        if server_list:
+            self.server_combo.set(server_list[0][1])  # Set to first server's display name
+
+    def get_current_server_id(self):
+        """Get the server ID from the selected display name"""
+        selected_name = self.server_var.get()
+        return self.server_name_to_id.get(selected_name)
+
     def start_download(self):
         """Start the download process for selected server"""
-        server = self.server_var.get()
-        self.logger.info(f"Starting download for {server} server")
-        self.update_status(f"Starting download for {server} server...")
+        server_id = self.get_current_server_id()
+        if not server_id:
+            messagebox.showerror("Error", "Please select a server")
+            return
+            
+        server_name = self.config[server_id]['name']
+        self.logger.info(f"Starting download for {server_name}")
+        self.update_status(f"Starting download for {server_name}...")
         
         # Start download thread
-        download_thread = threading.Thread(target=self.download_process, args=(server,), daemon=True)
+        download_thread = threading.Thread(target=self.download_process, args=(server_id,), daemon=True)
         download_thread.start()
 
     def stop_download(self):
@@ -171,8 +263,100 @@ class RemoteLogDownloader:
 
     def show_config(self):
         """Show configuration dialog"""
-        # Implement configuration dialog here
-        pass
+        # Create a new window for configuration
+        config_window = tk.Toplevel(self.root)
+        config_window.title("Configuration Editor")
+        config_window.geometry("800x600")
+        
+        # Create main frame
+        main_frame = ttk.Frame(config_window, padding="10")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Create text widget with syntax highlighting
+        config_text = scrolledtext.ScrolledText(main_frame, wrap=tk.WORD, font=('Courier New', 10))
+        config_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Read and display the config file
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                content = f.read()
+                config_text.insert(tk.END, content)
+                
+                # Apply syntax highlighting
+                self.highlight_syntax(config_text)
+        except Exception as e:
+            config_text.insert(tk.END, f"Error reading config file: {str(e)}")
+        
+        # Button frame
+        button_frame = ttk.Frame(main_frame)
+        button_frame.pack(fill=tk.X, pady=10)
+        
+        # Save button
+        ttk.Button(button_frame, text="Save Changes", 
+                  command=lambda: self.save_config(config_text, config_window)).pack(side=tk.LEFT, padx=5)
+        
+        # Close button
+        ttk.Button(button_frame, text="Close", 
+                  command=config_window.destroy).pack(side=tk.LEFT, padx=5)
+        
+        # Add status label
+        self.config_status = ttk.Label(button_frame, text="")
+        self.config_status.pack(side=tk.LEFT, padx=10)
+
+    def highlight_syntax(self, text_widget):
+        """Apply syntax highlighting to the config file"""
+        # Clear existing tags
+        text_widget.tag_remove('section', '1.0', tk.END)
+        text_widget.tag_remove('key', '1.0', tk.END)
+        text_widget.tag_remove('value', '1.0', tk.END)
+        text_widget.tag_remove('comment', '1.0', tk.END)
+        
+        # Configure tags
+        text_widget.tag_configure('section', foreground='blue', font=('Courier New', 10, 'bold'))
+        text_widget.tag_configure('key', foreground='green')
+        text_widget.tag_configure('value', foreground='red')
+        text_widget.tag_configure('comment', foreground='gray')
+        
+        # Get all text
+        content = text_widget.get('1.0', tk.END)
+        lines = content.split('\n')
+        
+        # Apply highlighting
+        for i, line in enumerate(lines, 1):
+            if line.startswith('[') and line.endswith(']'):
+                # Section headers
+                text_widget.tag_add('section', f'{i}.0', f'{i}.{len(line)}')
+            elif '=' in line and not line.strip().startswith('#'):
+                # Key-value pairs
+                key, value = line.split('=', 1)
+                text_widget.tag_add('key', f'{i}.0', f'{i}.{len(key)}')
+                text_widget.tag_add('value', f'{i}.{len(key) + 1}', f'{i}.{len(line)}')
+            elif line.strip().startswith('#'):
+                # Comments
+                text_widget.tag_add('comment', f'{i}.0', f'{i}.{len(line)}')
+
+    def save_config(self, text_widget, window):
+        """Save the configuration changes"""
+        try:
+            content = text_widget.get('1.0', tk.END)
+            
+            # Validate the content is a valid INI file
+            config = configparser.ConfigParser()
+            config.read_string(content)
+            
+            # Write to file
+            with open(CONFIG_FILE, 'w') as f:
+                f.write(content)
+            
+            # Reload the configuration
+            self.load_config()
+            
+            # Update status
+            self.config_status.config(text="Configuration saved successfully!", foreground='green')
+            self.root.after(2000, lambda: self.config_status.config(text=""))
+            
+        except Exception as e:
+            self.config_status.config(text=f"Error saving configuration: {str(e)}", foreground='red')
 
     def download_process(self, server):
         """Main download process for a server"""
@@ -216,8 +400,12 @@ class RemoteLogDownloader:
             config = self.config[server]
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            
+            # Use either hostname or IP based on preference
+            host = config['host'] if self.config['General']['connection_preference'] == 'hostname' else config['ip_address']
+            
             client.connect(
-                hostname=config['host'],
+                hostname=host,
                 port=int(config['port']),
                 username=config['username'],
                 password=config['password']

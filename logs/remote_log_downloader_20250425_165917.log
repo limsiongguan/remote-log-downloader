@@ -1,0 +1,6 @@
+2025-04-25 16:59:41,338 - RemoteLogDownloader - INFO - Starting download for BMS server
+2025-04-25 16:59:44,036 - RemoteLogDownloader - ERROR - Failed to connect to BMS server: [Errno 11001] getaddrinfo failed
+2025-04-25 16:59:45,935 - RemoteLogDownloader - INFO - Stopping download process
+2025-04-25 16:59:51,763 - RemoteLogDownloader - INFO - Starting download for AS server
+2025-04-25 16:59:54,462 - RemoteLogDownloader - ERROR - Failed to connect to AS server: [Errno 11001] getaddrinfo failed
+2025-04-25 16:59:59,255 - RemoteLogDownloader - INFO - Stopping download process
