@@ -67,94 +67,163 @@ class RemoteLogDownloader:
     def create_default_config(self):
         """Create default configuration file"""
         self.config['AS_Servers'] = {
-            'server_list': 'AS1,AS2,AS3'
+            'server_list': 'AS1,AS2,AS3,AS4,AS5,AS6',
+            'server_pairs': 'AS1:AS2,AS3:AS4,AS5:AS6',
+            'server_locations': 'AS1:cy,AS2:oc,AS3:cy,AS4:oc,AS5:cy,AS6:oc',
+            'remote_base_path': '/var/broadworks/logs/appserver',
+            'remote_temp_path': '/Temp/CDR',
+            'remote_log_patterns': 'XSLogYYYY-MM-DD-hh.mm.ss.txt',
+            'remote_zip_prefix': 'logs_',
+            'remote_zip_extension': '.zip'
         }
         
         self.config['AS1'] = {
             'name': 'AS Server 1 - Primary',
-            'host': 'as1.example.com',
-            'ip_address': '192.168.1.101',
+            'host': 'as1-cy',
+            'ip_address': '10.1.1.3',
             'port': '22',
-            'username': 'username',
-            'password': 'password',
-            'log_path': '/path/to/as1/logs',
-            'cdr_path': '/path/to/as1/cdrs',
-            'local_log_dir': 'as1_logs',
-            'local_cdr_dir': 'as1_cdrs'
+            'username': 'bwadmin',
+            'password': 'bwadmin',
+            'log_path': '/var/broadworks/logs/appserver',
+            'temp_path': '/tmp/XSLogs',
+            'local_log_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS1',
+            'local_xslog_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS1',
+            'location': 'cy',
+            'role': 'primary',
+            'pair_with': 'AS2'
         }
         
         self.config['AS2'] = {
-            'name': 'AS Server 2 - Backup',
-            'host': 'as2.example.com',
-            'ip_address': '192.168.1.102',
+            'name': 'AS Server 1 - Standby',
+            'host': 'as1-oc',
+            'ip_address': '10.1.1.4',
             'port': '22',
-            'username': 'username',
-            'password': 'password',
-            'log_path': '/path/to/as2/logs',
-            'cdr_path': '/path/to/as2/cdrs',
-            'local_log_dir': 'as2_logs',
-            'local_cdr_dir': 'as2_cdrs'
+            'username': 'bwadmin',
+            'password': 'bwadmin',
+            'log_path': '/var/broadworks/logs/appserver',
+            'cdr_path': '/var/broadworks/logs/cdr',
+            'temp_path': '/tmp/XSLogs',
+            'local_log_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS2',
+            'local_xslog_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS2',
+            'location': 'oc',
+            'role': 'standby',
+            'pair_with': 'AS1'
         }
         
         self.config['AS3'] = {
-            'name': 'AS Server 3 - DR',
-            'host': 'as3.example.com',
+            'name': 'AS Server 2 - Primary',
+            'host': 'as2-cy',
+            'ip_address': '10.1.1.5',
+            'port': '22',
+            'username': 'bwadmin',
+            'password': 'bwadmin',
+            'log_path': '/var/broadworks/logs/appserver',
+            'cdr_path': '/var/broadworks/logs/cdr',
+            'temp_path': '/tmp/XSLogs',
+            'local_log_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS3',
+            'local_xslog_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS3',
+            'location': 'cy',
+            'role': 'primary',
+            'pair_with': 'AS4'
+        }
+        
+        self.config['AS4'] = {
+            'name': 'AS Server 2 - Standby',
+            'host': 'as2-oc',
             'ip_address': '192.168.1.103',
             'port': '22',
-            'username': 'username',
-            'password': 'password',
-            'log_path': '/path/to/as3/logs',
-            'cdr_path': '/path/to/as3/cdrs',
-            'local_log_dir': 'as3_logs',
-            'local_cdr_dir': 'as3_cdrs'
+            'username': 'bwadmin',
+            'password': 'bwadmin',
+            'log_path': '/var/broadworks/logs/appserver',
+            'cdr_path': '/var/broadworks/logs/cdr',
+            'temp_path': '/tmp/XSLogs',
+            'local_log_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS4',
+            'local_xslog_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS4',
+            'location': 'oc',
+            'role': 'standby',
+            'pair_with': 'AS3'
+        }
+        
+        self.config['AS5'] = {
+            'name': 'AS Server 3 - Primary',
+            'host': 'as3-cy',
+            'ip_address': '192.168.1.103',
+            'port': '22',
+            'username': 'bwadmin',
+            'password': 'bwadmin',
+            'log_path': '/var/broadworks/logs/appserver',
+            'cdr_path': '/var/broadworks/logs/cdr',
+            'temp_path': '/tmp/XSLogs',
+            'local_log_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS5',
+            'local_xslog_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS5',
+            'location': 'cy',
+            'role': 'primary',
+            'pair_with': 'AS6'
+        }
+        
+        self.config['AS6'] = {
+            'name': 'AS Server 3 - Standby',
+            'host': 'as3-oc',
+            'ip_address': '192.168.1.103',
+            'port': '22',
+            'username': 'bwadmin',
+            'password': 'bwadmin',
+            'log_path': '/var/broadworks/logs/appserver',
+            'cdr_path': '/var/broadworks/logs/cdr',
+            'temp_path': '/tmp/XSLogs',
+            'local_log_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS6',
+            'local_xslog_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\AS6',
+            'location': 'oc',
+            'role': 'standby',
+            'pair_with': 'AS5'
         }
         
         self.config['BMS_Servers'] = {
-            'server_list': 'BMS1,BMS2,BMS3'
+            'server_list': 'BMS1,BMS2,BMS3',
+            'remote_base_path': '/bms/input_archive',
+            'remote_temp_path': '/tmp/CDR',
+            'remote_cdr_patterns': 'BW-CDR-YYYYMMDDhhmmss-*.xml'
         }
         
         self.config['BMS1'] = {
             'name': 'BMS Server 1 - Primary',
-            'host': 'bms1.example.com',
-            'ip_address': '192.168.2.101',
+            'host': 'bms1-cy',
+            'ip_address': '10.1.1.3',
             'port': '22',
-            'username': 'username',
-            'password': 'password',
-            'log_path': '/path/to/bms1/logs',
-            'cdr_path': '/path/to/bms1/cdrs',
-            'local_log_dir': 'bms1_logs',
-            'local_cdr_dir': 'bms1_cdrs'
+            'username': 'bmsadmin',
+            'password': 'bmsadmin',
+            'cdr_path': '/bms/input_archive',
+            'local_log_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\BMS1',
+            'local_cdr_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\BMS1'
         }
         
         self.config['BMS2'] = {
             'name': 'BMS Server 2 - Backup',
-            'host': 'bms2.example.com',
-            'ip_address': '192.168.2.102',
+            'host': 'bms2-cy',
+            'ip_address': '10.1.1.4',
             'port': '22',
-            'username': 'username',
-            'password': 'password',
-            'log_path': '/path/to/bms2/logs',
-            'cdr_path': '/path/to/bms2/cdrs',
-            'local_log_dir': 'bms2_logs',
-            'local_cdr_dir': 'bms2_cdrs'
+            'username': 'bmsadmin',
+            'password': 'bmsadmin',
+            'cdr_path': '/bms/input_archive',
+            'local_log_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\BMS2',
+            'local_cdr_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\BMS2'
         }
         
         self.config['BMS3'] = {
             'name': 'BMS Server 3 - DR',
-            'host': 'bms3.example.com',
-            'ip_address': '192.168.2.103',
+            'host': 'bms3-cy',
+            'ip_address': '10.1.1.5',
             'port': '22',
-            'username': 'username',
-            'password': 'password',
-            'log_path': '/path/to/bms3/logs',
-            'cdr_path': '/path/to/bms3/cdrs',
-            'local_log_dir': 'bms3_logs',
-            'local_cdr_dir': 'bms3_cdrs'
+            'username': 'bmsadmin',
+            'password': 'bmsadmin',
+            'cdr_path': '/bms/input_archive',
+            'local_log_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\BMS3',
+            'local_cdr_dir': 'C:\\10-Cursor\\06-remote-log-downloader\\BMS3'
         }
         
         self.config['General'] = {
-            'download_interval': '3600',  # 1 hour
-            'retry_interval': '300',      # 5 minutes
+            'download_interval': '30',  # 5 minutes
+            'retry_interval': '30',     # 5 minutes
             'max_retries': '3',
             'enabled_servers': 'AS1,AS2,AS3,BMS1,BMS2,BMS3',
             'connection_preference': 'hostname'
