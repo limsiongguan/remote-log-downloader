@@ -237,7 +237,7 @@ class RemoteLogDownloader:
         if not os.path.exists(LOG_DIR):
             os.makedirs(LOG_DIR)
             
-        log_file = os.path.join(LOG_DIR, f"remote_log_downloader_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+        log_file = os.path.join(LOG_DIR, f"logtool_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
         
         self.logger = logging.getLogger('RemoteLogDownloader')
         self.logger.setLevel(logging.DEBUG)
